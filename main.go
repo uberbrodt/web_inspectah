@@ -48,11 +48,12 @@ func checkUserAgent(userAgent string) bool {
 }
 
 func checkIpAndReferrer(ipaddr string, referrer string) bool {
-	if subnet10.MatchString(ipaddr) || subnet172.MatchString(ipaddr) || subnet192.MatchString(ipaddr) {
+
+	if subnet10.MatchString(ipaddr) || subnet172.MatchString(ipaddr) || subnet192.MatchString(ipaddr) || len(ipaddr) <= 0 {
 		return false
 	}
 
-	if localhostRegex.MatchString(referrer) || loopbackRegex.MatchString(referrer) {
+	if localhostRegex.MatchString(referrer) || loopbackRegex.MatchString(referrer) || len(referrer) <= 0 {
 		return false
 	}
 	return true
