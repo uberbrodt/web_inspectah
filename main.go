@@ -79,15 +79,17 @@ func main() {
 				http.Error(w, "Not Valid", 403)
 				return
 			}
-			var decodedReferrer, errReferrer = url.QueryUnescape(keyValMap["referrer"])
+			var decodedReferrer, errReferrer = url.QueryUnescape(keyValMap["referer"])
 			check(errReferrer)
 			var referrerResult = checkIpAndReferrer(keyValMap["ip"], decodedReferrer)
 			if referrerResult == false {
 				http.Error(w, "Not Valid", 403)
 				return
 			}
+			w.WriteHeader(http.StatusNoContent)
+		} else {
+			http.Error(w, "No Request Data", 403)
 		}
-		w.WriteHeader(http.StatusNoContent)
 	})
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
 }
