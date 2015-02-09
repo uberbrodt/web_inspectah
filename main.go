@@ -1,13 +1,16 @@
 package main
 
+import . "bayesian"
 import (
 	"net/http"
 	"net/url"
 	"log"
 	"strings"
 	"bufio"
-	"os"
 	"regexp"
+	"encoding/csv"
+	"os"
+	"fmt"
 )
 
 var userAgentStrings []string
@@ -17,6 +20,7 @@ var subnet172 = regexp.MustCompile(`^172\.[1-3][678901].*`)
 var subnet192 = regexp.MustCompile(`^192\.168\..*`)
 var localhostRegex = regexp.MustCompile(`^http://localhost`)
 var loopbackRegex = regexp.MustCompile(`127.0.0.1`)
+var trained_classifier = return_classifier()
 
 func check(e error) {
 	if e != nil {
@@ -59,6 +63,67 @@ func checkIpAndReferrer(ipaddr string, referrer string) bool {
 	return true
 }
 
+const (
+	Good Class = "Good"
+	Bad Class = "Bad"
+)
+
+func get_bad_data() []string {
+	bad_data, bad_data_err := os.Open("bad_data.csv")
+	check(bad_data_err)
+
+	defer bad_data.Close()
+	bad_data_reader := csv.NewReader(bad_data)
+	bad_data_reader.FieldsPerRecord = 4
+	rawBadDataCSV, badDataErr := bad_data_reader.ReadAll()
+
+	check(badDataErr)
+
+	bad_host_names := make([]string, 0)
+
+	for _, each := range rawBadDataCSV {
+		bad_host_names = append(bad_host_names,each[2])
+	}
+
+	return bad_host_names
+}
+
+func get_good_data() []string {
+	good_data, good_data_err := os.Open("good_data.csv") 
+	check(good_data_err)
+
+	defer good_data.Close()
+	data_reader := csv.NewReader(good_data)
+	data_reader.FieldsPerRecord = 4
+	rawCsv, dataErr := data_reader.ReadAll()
+
+	check(dataErr)
+	
+	host_names := make([]string, 0)
+
+	for _, each := range rawCsv {
+		host_names = append(host_names,each[2])
+	}
+
+	return host_names
+}
+
+func return_classifier() *Classifier {
+	classifier := NewClassifier(Good, Bad)
+	classifier.Learn(get_bad_data(),Bad)
+	classifier.Learn(get_good_data(),Good)
+
+	return classifier
+}
+
+func host_names_bayesian_score(hostname string) int {
+	scores, likely, _ := trained_classifier.LogScores(
+		                        []string{hostname})
+	fmt.Println(scores)
+	return likely
+}
+
+
 func main() {
 	err := readUserAgentFile()
 	check(err)
@@ -86,6 +151,13 @@ func main() {
 				http.Error(w, "Not Valid", 403)
 				return
 			}
+
+			var bayes_result = host_names_bayesian_score(decodedReferrer)
+			if bayes_result > 0 {
+				http.Error(w, "Not Valid", 403)
+				return
+			}
+
 			w.WriteHeader(http.StatusNoContent)
 		} else {
 			http.Error(w, "No Request Data", 403)
