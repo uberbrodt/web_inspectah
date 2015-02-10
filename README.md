@@ -15,3 +15,5 @@ First, I collected all the 'good' user agents and used that as a whitelist for a
 disqualified any requests with localhost or private subnets in the ip address and referer fields (the idea is that
 we're doing this for ad based services, so this makes sense). I then wrote a test runner (test_runner_virool.rb) to
 see how my service performed with test data. I was only marking a little over a 1000 of the requests that were false as false so that was when I introduced the naive Bayesian classifier on the referrer email. At that point I figured I had about 85% accuracy on the training set (and was also out of time to complete it!). I would have liked to build out the bayesian part and do more work on finding a pattern in the IP addresses (perhaps doing reverse dns lookups?), but I'm proud of what I got done (since I started the challenge late on Saturday as I was working the Traitify booth most of the day).
+
+In hindsight my only regret was not naming the project "Inspectah Web", since that's more like Inspectah Deck.
