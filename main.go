@@ -16,7 +16,7 @@ import (
 var userAgentStrings []string
 
 var subnet10 = regexp.MustCompile(`^10\..*`)
-var subnet172 = regexp.MustCompile(`^172\.[1-3][678901].*`)
+var subnet172 = regexp.MustCompile(`172\.(1[6-9]|2[0-9]|3[0-1])\..*`)
 var subnet192 = regexp.MustCompile(`^192\.168\..*`)
 var localhostRegex = regexp.MustCompile(`^http://localhost`)
 var loopbackRegex = regexp.MustCompile(`127.0.0.1`)
